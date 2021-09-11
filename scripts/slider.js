@@ -192,13 +192,14 @@ class SliderCarousel {
                 return null;
             }
             if (target.closest('.slider__dot')) {
+
                 clearInterval(this.intervalDots)
                 this.dots[this.iDots].classList.remove('dot_active')
                 this.dots.forEach((item) => {
                     item.classList.remove('dot_active');
                 })
                 this.iDots = +target.getAttribute('index');
-                this.index = this.iDots;
+                this.options.position = this.iDots;
                 this.intervalDots = setInterval(() => {
                     if (target.closest('.sliders__arrow_left') || target.closest('.sliders__arrow_right')) {
                         return null;

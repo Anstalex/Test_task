@@ -233,7 +233,7 @@ const carousel = new SliderCarousel({
     prev: '.sliders__arrow_left',
     dotsWrapper: '.slider__dots',
     time: 5,
-    slideNumber: 4,
+    slideNumber: 6,
 });
 
 carousel.init();

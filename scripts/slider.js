@@ -1,12 +1,3 @@
-let dots;
-let i = 100;
-let iDots = 0;
-let result;
-let intervalId;
-let intervalTwo;
-let intervalDots;
-let switcher = true;
-
 const handler = (item, event, callback) => {
     item.addEventListener(event, callback)
 };
@@ -17,27 +8,47 @@ class SliderCarousel {
                     time,
                     wrap,
                     next,
-                    slide,
+                    slide = [],
                     prev,
                     dotsWrapper,
                     slidesToShow = 1,
                     position = 0,
+                    intervalId,
+                    intervalTwo,
+                    intervalDots,
+                    result,
+                    iDots = 0,
+                    dots,
+                    slideNumber = 4,
+                    i = 100,
+                    switcher = true,
                 }) {
+        this.slide = slide;
+        this.slideNumber = slideNumber;
+        this.switcher = switcher;
+        this.i = i;
+        this.dots = dots;
+        this.iDots = iDots;
+        this.result = result;
+        this.intervalId = intervalId;
+        this.intervalTwo = intervalTwo;
         this.time = time;
         this.main = document.querySelector(main);
-        this.slide = document.querySelectorAll(slide);
+        this.main = document.querySelector(main);
         this.wrap = document.querySelector(wrap);
         this.next = document.querySelector(next);
         this.prev = document.querySelector(prev);
         this.dotsWrapper = document.querySelector(dotsWrapper)
         this.slidesToShow = slidesToShow;
+        this.intervalDots = intervalDots;
         this.options = {
             position,
         };
     }
 
     init() {
-        this.onload()
+        this.createSlide();
+        this.onload();
         this.controlSlider();
         this.createDots();
         this.createClone();
@@ -45,67 +56,79 @@ class SliderCarousel {
 
     onload() {
         handler(document, 'DOMContentLoaded', () => {
-            this.wrap.style.transform = `translateX(-${i}%)`;
+            this.wrap.style.transform = `translateX(-${this.i}%)`;
         })
     }
 
     createClone() {
         let cloneBegin = this.slide[0].cloneNode(true);
-        let cloneLast = this.slide[this.slide.length - 1].cloneNode(true);
+        let cloneLast = this.slide[this.slideNumber - 1].cloneNode(true);
         this.wrap.append(cloneBegin);
         cloneBegin.classList.add('clone')
         this.wrap.prepend(cloneLast);
         cloneLast.classList.add('clone')
     }
 
+    createSlide() {
+        for (let i = 0; i < this.slideNumber; i++) {
+            const slide = document.createElement('div');
+            const img = document.createElement('img');
+            img.src = `images/slider/${i + 1}.jpg`
+            slide.classList.add('sliders__item');
+            slide.appendChild(img);
+            this.wrap.appendChild(slide);
+            this.slide.push(slide);
+        }
+    }
+
     createDots() {
-        for (let i = 0; i < this.slide.length; i++) {
+        for (let i = 0; i < this.slideNumber; i++) {
             const item = document.createElement('li');
             item.classList.add('slider__dot');
             this.dotsWrapper.append(item);
         }
-        dots = document.querySelectorAll('.slider__dot');
-        dots.forEach((item, index) => {
+        this.dots = document.querySelectorAll('.slider__dot');
+        this.dots.forEach((item, index) => {
             item.setAttribute('index', index.toString())
         })
-        dots[0].classList.add('dot_active');
+        this.dots[0].classList.add('dot_active');
     };
 
     prevSlider() {
-        if (i % 100 !== 0) {
+        clearInterval(this.intervalTwo);
+        if (this.i % 100 !== 0) {
             return null
         }
-        dots[iDots].classList.remove('dot_active')
-        iDots--
-        if (iDots < 0) {
-            iDots = this.slide.length - 1;
-        } else if (iDots === this.slide.length) {
-            iDots = 0;
+        this.dots[this.iDots].classList.remove('dot_active')
+        this.iDots--
+        if (this.iDots < 0) {
+            this.iDots = this.slideNumber - 1;
+        } else if (this.iDots === this.slideNumber) {
+            this.iDots = 0;
         }
-        dots[iDots].classList.add('dot_active')
+        this.dots[this.iDots].classList.add('dot_active')
         if (this.options.position >= 0) {
             --this.options.position;
             if (this.options.position < 0) {
-                this.options.position = this.slide.length - 1;
+                this.options.position = this.slideNumber - 1;
             }
-            result = 100 * this.options.position
-            intervalTwo = setInterval(() => {
-                if (((i > 0) && (i <= 100) && switcher) || (i > (this.options.position + 1) * 100)) {
-                    if (i > 100) {
-                        switcher = false;
+            this.result = 100 * this.options.position
+            this.intervalTwo = setInterval(() => {
+                if (((this.i > 0) && (this.i <= 100) && this.switcher) || (this.i > (this.options.position + 1) * 100)) {
+                    if (this.i > 100) {
+                        this.switcher = false;
                     }
-                    i--;
-                    this.wrap.style.transform = `translateX(-${i}%)`;
-
+                    this.i--;
+                    this.wrap.style.transform = `translateX(-${this.i}%)`;
                 } else {
-                    if (i === 0) {
-                        i = 100 * (this.slide.length)
-                        this.wrap.style.transform = `translateX(-${i}%)`;
-                    } else if (i === 100) {
-                        switcher = true
+                    if (this.i === 0) {
+                        this.i = 100 * (this.slideNumber)
+                        this.wrap.style.transform = `translateX(-${this.i}%)`;
+                    } else if (this.i === 100) {
+                        this.switcher = true
 
                     }
-                    clearInterval(intervalTwo);
+                    clearInterval(this.intervalTwo);
 
                 }
             }, this.time)
@@ -115,33 +138,34 @@ class SliderCarousel {
     }
 
     nextSlider() {
-        if (i % 100 !== 0) {
+        clearInterval(this.intervalId);
+        if (this.i % 100 !== 0) {
             return null;
         }
-        dots[iDots].classList.remove('dot_active')
-        iDots++
-        if (iDots < 0) {
-            iDots = this.slide.length - 1;
-        } else if (iDots === this.slide.length) {
-            iDots = 0;
+        this.dots[this.iDots].classList.remove('dot_active')
+        this.iDots++
+        if (this.iDots < 0) {
+            this.iDots = this.slideNumber - 1;
+        } else if (this.iDots === this.slideNumber) {
+            this.iDots = 0;
         }
-        dots[iDots].classList.add('dot_active')
-        if (this.options.position < this.slide.length) {
+        this.dots[this.iDots].classList.add('dot_active')
+        if (this.options.position < this.slideNumber) {
             ++this.options.position;
-            if (this.options.position > this.slide.length - 1) {
+            if (this.options.position > this.slideNumber - 1) {
                 this.options.position = 0
             }
-            result = 100 * this.options.position
-            if (i === 100 * (this.slide.length - 1) + 100) {
-                i = 0;
-                this.wrap.style.transform = `translateX(-${i}%)`;
+            this.result = 100 * this.options.position
+            if (this.i === 100 * (this.slideNumber - 1) + 100) {
+                this.i = 0;
+                this.wrap.style.transform = `translateX(-${this.i}%)`;
             }
-            intervalId = setInterval(() => {
-                if (i >= (result) && i < result + 100) {
-                    i++;
-                    this.wrap.style.transform = `translateX(-${i}%)`;
+            this.intervalId = setInterval(() => {
+                if (this.i >= (this.result) && this.i < this.result + 100) {
+                    this.i++;
+                    this.wrap.style.transform = `translateX(-${this.i}%)`;
                 } else {
-                    clearInterval(intervalId);
+                    clearInterval(this.intervalId);
                 }
             }, this.time)
         }
@@ -151,52 +175,52 @@ class SliderCarousel {
 
     controlSlider() {
         handler(this.prev, 'click', () => {
+            if (this.i % 100 !== 0) {
+                return null;
+            }
             this.prevSlider(this.slidesToShow);
         });
         handler(this.next, 'click', () => {
-            if (i % 100 !== 0) {
+            if (this.i % 100 !== 0) {
                 return null;
             }
-            clearInterval(intervalId)
             this.nextSlider(this.slidesToShow);
         });
         handler(document, 'click', (e) => {
             const target = e.target;
+            if (this.i % 100 !== 0) {
+                return null;
+            }
             if (target.closest('.slider__dot')) {
-                if (i % 100 !== 0) {
-                    return null;
-                }
-                clearInterval(intervalDots)
-
-                dots[iDots].classList.remove('dot_active')
-                dots.forEach((item) => {
+                clearInterval(this.intervalDots)
+                this.dots[this.iDots].classList.remove('dot_active')
+                this.dots.forEach((item) => {
                     item.classList.remove('dot_active');
                 })
-                iDots = +target.getAttribute('index');
-                this.index = iDots;
-                intervalDots = setInterval(() => {
+                this.iDots = +target.getAttribute('index');
+                this.index = this.iDots;
+                this.intervalDots = setInterval(() => {
                     if (target.closest('.sliders__arrow_left') || target.closest('.sliders__arrow_right')) {
                         return null;
                     }
-                    if (i < (iDots + 1) * 100) {
-                        i++;
-                        this.wrap.style.transform = `translateX(-${i}%)`;
-                    } else if (i > (iDots + 1) * 100) {
-                        i--;
-                        this.wrap.style.transform = `translateX(-${i}%)`;
+                    if (this.i < (this.iDots + 1) * 100) {
+                        this.i++;
+                        this.wrap.style.transform = `translateX(-${this.i}%)`;
+                    } else if (this.i > (this.iDots + 1) * 100) {
+                        this.i--;
+                        this.wrap.style.transform = `translateX(-${this.i}%)`;
                     } else {
-                        clearInterval(intervalDots)
+                        clearInterval(this.intervalDots)
                     }
                 }, this.time)
                 target.classList.add('dot_active');
             }
-            if (iDots < 0) {
-                iDots = this.slide.length - 1;
-            } else if (iDots === this.slide.length) {
-                iDots = 0;
+            if (this.iDots < 0) {
+                this.iDots = this.slideNumber - 1;
+            } else if (this.iDots === this.slideNumber) {
+                this.iDots = 0;
             }
-            dots[iDots].classList.add('dot_active');
-
+            this.dots[this.iDots].classList.add('dot_active');
         });
     }
 }
@@ -204,11 +228,11 @@ class SliderCarousel {
 const carousel = new SliderCarousel({
     main: '.sliders__inner',
     wrap: '.sliders__wrap',
-    slide: '.sliders__item',
     next: '.sliders__arrow_right',
     prev: '.sliders__arrow_left',
     dotsWrapper: '.slider__dots',
     time: 5,
+    slideNumber: 4,
 });
 
 carousel.init();
